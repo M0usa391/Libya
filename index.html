@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مدير الوصفات</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.css">
+<style>
+  body { font-family: Arial, sans-serif; background-color: #f7f7f7; }
+  .container { width: 80%; margin: auto; padding: 20px; }
+  input, textarea, button { margin: 10px 0; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
+  button { background-color: #8ecae6; color: white; border: none; cursor: pointer; }
+  button:hover { background-color: #219ebc; }
+  #recipes { margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>مدير الوصفات</h1>
+  <input type="text" id="mealName" placeholder="اسم الوجبة">
+  <textarea id="recipeDescription" placeholder="وصف الوجبة"></textarea>
+  <button onclick="addRecipe()">إضافة وصفة</button>
+  <input type="text" id="search" placeholder="ابحث عن وصفة">
+  <button onclick="searchRecipe()">بحث</button>
+  <div id="recipes"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+<script>
+// تحقق من وجود الوصفات في الـ Local Storage
+function getRecipes() {
+  return JSON.parse(localStorage.getItem('recipes')) || [];
+}
+
+// إضافة وصفة جديدة
+function addRecipe() {
+  const name = document.getElementById('mealName').value.trim();
+  const description = document.getElementById('recipeDescription').value.trim();
+  const recipes = getRecipes();
+  const existingRecipe = recipes.find(recipe => recipe.name.toLowerCase() === name.toLowerCase());
+  
+  if (!name || !description) {
+    swal("خطأ", "لا يمكن ترك حقول الاسم أو الوصف فارغة", "error");
+    return;
+  } else if (existingRecipe) {
+    swal("خطأ", "الوصفة موجودة بالفعل", "error");
+    return;
+  }
+  
+  recipes.push({ name, description });
+  localStorage.setItem('recipes', JSON.stringify(recipes));
+  swal("تم!", "تم إضافة الوصفة بنجاح", "success");
+  document.getElementById('mealName').value = '';
+  document.getElementById('recipeDescription').value = '';
+}
+
+// البحث عن وصفة
+function searchRecipe() {
+  const searchTerm = document.getElementById('search').value.toLowerCase();
+  const recipes = getRecipes();
+  const filteredRecipes = recipes.filter(recipe => recipe.name.toLowerCase().includes(searchTerm));
+  displayRecipes(filteredRecipes);
+}
+
+// عرض الوصفات
+function displayRecipes(recipes) {
+  const recipesList = document.getElementById('recipes');
+  recipesList.innerHTML = '';
+  recipes.forEach((recipe, index) => {
+    recipesList.innerHTML += `<div>${recipe.name}: ${recipe.description}<button onclick="deleteRecipe(${index})">حذف</button></div>`;
+  });
+}
+
+// حذف وصفة
+function deleteRecipe(index) {
+  const recipes = getRecipes();
+  recipes.splice(index, 1);
+  localStorage.setItem('recipes', JSON.stringify(recipes));
+  displayRecipes(recipes);
+}
+
+// عند تحميل الصفحة، لا تعرض أي وصفات
+window.onload = function() {};
+</script>
+</body>
+</html>
